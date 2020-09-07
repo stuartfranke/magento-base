@@ -1,51 +1,100 @@
 version: "3.8"
 
 services:
-  # HTTP Server: NginX 1.19.1 on Alpine 3.11
-  http:
-    image: nginx:1.19.1
-    container_name: magento-base-http
-    depends_on:
-      - app
-      - db
-    links:
-      - app
-      - db
-    ports:
-      - 8080:80
-    restart: always
-    volumes:
-      - ".:/www"
-      - "./docker/http/default.conf:/etc/nginx/conf.d/default.conf"
+    app:
+        image: magento-base-app
+        build:
+            context: .
+        container_name: magento-base-app
+        depends_on:
+            - db
+            - ftse
+            - imdb
+            - mb
+        env_file:
+            - ./docker/.docker-env
+        links:
+            - db
+            - ftse
+            - imdb
+            - mb
+        restart: always
+        volumes:
+            - .:/www
 
-  # App: PHP FPM 7.2.32 and NodeJS 14.5.0 on Alpine 3.12
-  app:
-    image: magento-base-app
-    build:
-      context: .
-    container_name: magento-base-app
-    depends_on:
-      - db
-    links:
-      - db
-    restart: always
-    volumes:
-      - ".:/www"
+    db:
+        image: mysql:8.0.21
+        container_name: magento-base-db
+        env_file:
+            - ./docker/.docker-env
+        ports:
+            - 3306:3306
+        restart: always
+        volumes:
+            - magento-base-db:/var/lib/mysql
 
-  db:
-    image: mariadb:10.5.4-focal
-    container_name: magento-base-db
-    environment:
-      - MYSQL_ROOT_PASSWORD=magento2
-      - MYSQL_DATABASE=magento2
-      - MYSQL_USER=magento2
-      - MYSQL_PASSWORD=magento2
-      - TERM=meh
-    ports:
-      - 3306:3306
-    restart: always
-    volumes:
-      - magento-base-db:/var/lib/mysql
+    ftse:
+        image: elasticsearch:7.6.2
+        container_name: magento-base-ftse
+        env_file:
+            - ./docker/.docker-env
+        ports:
+            - 9200:9200
+            - 9300:9300
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - magento-base-ftse:/usr/share/elasticsearch/data
+
+    http:
+        image: nginx:1.19.1
+        container_name: magento-base-http
+        depends_on:
+            - app
+            - db
+            - ftse
+        links:
+            - app
+            - db
+            - ftse
+        ports:
+            - 8080:80
+        restart: always
+        volumes:
+            - .:/www
+            - ./docker/http/etc/default.conf:/etc/nginx/conf.d/default.conf
+
+    imdb:
+        image: redis:6.0.6-alpine3.12
+        container_name: magento-base-imdb
+        env_file:
+            - ./docker/.docker-env
+        ports:
+            - 6379:6379
+        restart: always
+        volumes:
+            - magento-base-imdb:/data
+
+    mb:
+        image: magento-base-mb
+        build:
+            context: .
+            dockerfile: Dockerfile-mb
+        container_name: magento-base-mb
+        env_file:
+            - ./docker/.docker-env
+        hostname: magento-base-mb
+        ports:
+            - 5672:5672
+            - 15672:15672
+        restart: always
+        volumes:
+            - magento-base-mb:/var/lib/rabbitmq
 
 volumes:
-  magento-base-db:
+    magento-base-db:
+    magento-base-ftse:
+    magento-base-imdb:
+    magento-base-mb:

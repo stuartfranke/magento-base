@@ -1,0 +1,21 @@
+# APP
+
+# DB
+MYSQL_ROOT_PASSWORD=magento2
+MYSQL_DATABASE=magento2
+MYSQL_USER=magento2
+MYSQL_PASSWORD=magento2
+
+# FTSE
+discovery.type=single-node
+ES_JAVA_OPTS="-Xms512m -Xmx512m"
+
+# IMDB
+REDIS_DSN=redis://magento-base-imdb
+
+# MB
+RABBITMQ_USER=rabbitmq
+RABBITMQ_PASSWORD=rabbitmq
+RABBITMQ_URL=amqp://rabbitmq:rabbitmq@magento-base-mb:5672/%2F?lazy=1&connection_timeout=2
+RABBITMQ_HOST=amqp://rabbitmq:rabbitmq@magento-base-mb
+RABBITMQ_PORT=5672

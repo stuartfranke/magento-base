@@ -1,4 +1,4 @@
-FROM php:7.3.21-fpm-alpine3.12
+FROM php:7.4.10-fpm-alpine3.12
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV USER_DIRECTORY "/root"
@@ -18,40 +18,43 @@ RUN apk update --progress --purge \
         gcc \
         git \
         gnupg \
+        gzip \
         icu-dev \
         libjpeg-turbo-dev \
         libpng-dev \
         libxml2-dev \
         libxslt-dev \
         libzip-dev \
+        lsof \
         make \
+        sed \
+        tar \
         unzip \
         vim \
-        wget
-
-# Install PHP extensions
-# @todo version lock extensions
-# @todo move dev specific extensions to dev environment
-RUN docker-php-ext-install \
-    bcmath \
-    intl \
-    opcache \
-    pdo_mysql \
-    soap \
-    sockets \
-    xsl \
-    zip \
-    && pecl install xdebug-2.9.6
-
-
-RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+        wget \
+    # Install PHP extensions @todo 1. version lock extensions 2. move dev specific extensions to dev environment
+    && docker-php-ext-install \
+        bcmath \
+        intl \
+        opcache \
+        pdo_mysql \
+        soap \
+        sockets \
+        xsl \
+        zip \
+    && pecl install \
+        xdebug-2.9.6 \
+        apcu \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-configure intl \
     && docker-php-ext-install gd \
-    && docker-php-ext-enable xdebug
+    && docker-php-ext-enable \
+        apcu \
+        xdebug
 
 # Copy PHP config files
-COPY ./docker/app/php/conf.d/* /usr/local/etc/php/conf.d
-COPY ./docker/app/php/php.ini /usr/local/etc/php
+COPY ./docker/app/etc/conf.d/* /usr/local/etc/php/conf.d
+COPY ./docker/app/etc/php.ini /usr/local/etc/php
 
 # Create Xdebug log file
 # @todo find a way to not give full access to the log file
