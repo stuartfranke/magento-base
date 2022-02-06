@@ -1,4 +1,4 @@
-FROM php:7.4.10-fpm-alpine3.12
+FROM php:7.4.18-fpm-alpine3.12
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV USER_DIRECTORY "/root"
