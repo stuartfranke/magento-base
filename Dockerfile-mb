@@ -1,4 +1,4 @@
-FROM rabbitmq:3.8.7-management
+FROM rabbitmq:3.11.6-management
 
 RUN apt -yqq update \
     && apt install -yqq dos2unix \
